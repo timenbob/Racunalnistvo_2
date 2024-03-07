@@ -22,7 +22,7 @@
 #     8
 # =============================================================================
 import math
-def optimalni_tovor(predmeti, W):
+def optimalni_tovor1(predmeti, W):
     chach={}
     
     def fun(i,W):
@@ -34,6 +34,28 @@ def optimalni_tovor(predmeti, W):
             chach[(i,W)]=max(predmeti[i][0]+ fun(i-1,W-predmeti[i][1]),fun(i-1,W))  
         return chach[(i,W)]
     return fun(len(predmeti)-1,W)
+
+from functools import lru_cache
+
+
+def optimalni_tovor(predmeti, W):
+    
+    # uporabimo vgrajen mehanizem za memoizacijo
+    @lru_cache(maxsize=None)
+    def najboljsi(i, w):
+
+        # Ne smemo iti čez omejitev
+        if w < 0:
+            return float("-inf")
+        # Če nimamo več predmetov, ali pa nimamo več prostora
+        if i == 0 or w == 0:
+            return 0
+        
+        # Pozor: Vrstni red robnih primerov je pomemben
+        
+        # Gledamo podprobleme
+        return max(najboljsi(i-1, w), najboljsi(i-1, w - predmeti[i-1][1]) + predmeti[i-1][0])
+    return najboljsi(len(predmeti), W)
        
 # =====================================================================@038098=
 # 2. podnaloga
@@ -45,28 +67,53 @@ def optimalni_tovor(predmeti, W):
 #     >>> optimalni_predmeti([(2,3), (4,4), (5,4), (3,2), (1,2), (15, 12)], 7)
 #     [(3, 2), (5, 4)]
 # =============================================================================
-def optimalni_predmeti(predmeti, W):
-    chach={}
-    niz=set()
-    def fun(i,W):
-        if W < 0:
-            return -1*math.inf
-        if i<0:
-            return 0  
-        elif (i,W) not in chach:
-            v1=predmeti[i][0]+ fun(i-1,W-predmeti[i][1])
-            v2=fun(i-1,W)
-            if v1>v2:
-                niz.add(predmeti[i])
-                chach[(i,W)]=v2
-                
-            else:
-                chach[(i,W)]=v1    
-            
+def optimalni_predmeti(p, W):
+  
+    @lru_cache(maxsize=None)
+    def najboljsi(i, w):
+        """
+        vrne (c, vzamemo), kjer je
+        c cena najboljšega nahrbtnika z elementi 0,...,i-1 ter
+        vzamemo=1, če i-ti element vzamemo v najboljši nahrbtnik, 0 sicer.
+        """
+
+        # Robni pogoji so enaki kot prej, le da vrnemo še dodatno vrednost
+        if w < 0:
+            return float("-inf"), 0
+         
+        if i == 0 or w == 0:
+            return 0, 0
         
-        return chach[(i,W)]
-    fun(len(predmeti)-1,W)
-    return niz
+        # Rešimo oba podproblma 
+        ne_vzamemo, _ = najboljsi(i-1, w)
+        vzamemo, _ = najboljsi(i-1, w - p[i-1][1]) 
+
+        # tu se odločimo, da vzamemo predmet i samo takrat ko se nam dejansko splača.
+        # Torej prioritiziramo predmete z manjšim indeksom. Lahko bi dali tudi >=
+        if vzamemo + p[i-1][0] > ne_vzamemo:
+            return vzamemo + p[i-1][0], 1
+        
+        return ne_vzamemo, 0
+    
+    najboljsi(len(p), W)#cache nafila
+
+    # preberemo sedaj katere predmete smo vzeli:
+
+   
+    i = len(p)
+    v = []
+    while W > 0 and i > 0:
+
+        # ali smo vzeli i-ti predmet v optimalni nahrbtnik
+        _, vzamemo = najboljsi(i, W)
+        if vzamemo:
+            # ga dodamo v seznam in zmanjšamo velikost nahrbtnika
+            v.append(p[i-1])
+            W -= p[i-1][1]
+        i-=1
+        
+    # Kakšna je zahtevnost the while zanke?
+    return v
 
 
 # =====================================================================@038099=
@@ -97,18 +144,7 @@ def optimalni_predmeti(predmeti, W):
 #     >>> neomejena_zaloga([(2,3), (4,4), (5,4), (3,2), (1,2), (15, 12)], 23)
 #     33
 # =============================================================================
-def neomejena_zaloga(predmeti, W):
-    chach={}
-    
-    def fun(i,W):
-        if W < 0:
-            return -math.inf
-        if i<0:
-            return 0  
-        elif (i,W) not in chach:
-            chach[(i,W)]=max(predmeti[i][0]+ fun(i-1,W-predmeti[i][1]),fun(i-1,W))  
-        return chach[(i,W)]
-    return fun(len(predmeti)-1,W)
+
 # =====================================================================@038101=
 # 5. podnaloga
 # Trgovec je ugotovil, da se mu izplača imeti nekaterih predmetov več na zalogi kot ostalih.
