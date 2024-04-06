@@ -11,7 +11,7 @@ Na četrtih vajah smo si ogledali par različnih implementacij 0/1 Nahrbtnika. P
 
 ### Opis problema
 V tem problemu bomo obravnavali eno od verzij 0/1 Nahrbtnika in sicer tisto kjer se lahko predmeti pojavijo veckrat. 
-Vhodni podatki so volumen nahrbtnika (W) ter seznam različnih predmetov(A), za vsak predmet imamo podan volumen in ceno(v,c).
+Vhodni podatki so volumen nahrbtnika (W) ter seznam različnih predmetov(A), za vsak predmet imamo podan volumen in ceno $(v,c)$.
 Vsak element iz seznama A lahko nastopi večkrat. Zanima nas maksimalna vrednost našega nahrbtnika.
 Kor izhodni podatek bi radi podali število, ki je enako vrednosti oprimalnega nahrbtnika.
 ```
@@ -26,34 +26,40 @@ V prvem načinu naše osnovne podatke spremenimo. Volumen nahrbtnika ostane isti
 
 ##### Rešitev
 Za vsak element v seznamu A pogledamo kolikokrat ga lahko vstavimo v naš nahrbtnik, nato naš element tolikokrat ponovimo.
-```
-W=30
-A=[(10,6),(15,3),(20,12)]
-Pogljemo kolikokrat lahko element (10,6) vstavimo v naš nahrbnik. Opazimo da 3krat, saj 4krat bi že presegli volumen nahrbnika.
-Pogljemo kolikokrat lahko element (15,3) vstavimo v naš nahrbnik. Opazimo da 2krat.
-Pogljemo kolikokrat lahko element (20,12) vstavimo v naš nahrbnik. Opazimo da 1krat.
-Naš novi seznam A je torej [(10,6),(10,6),(10,6),(15,3),(15,3),(20,12)]
-```
-Na naših novih podatkih sedaj izvedemo navadno Bellmanovo enačbo za 0/1-Nahrbtnik.
-```
-G(i,W)=max{c_i + G(i-1,W-v_i),G(i-1,W)}
-```
-V formuli i predtsvlja i-ti predmeti c_i vrednost oziroma ceno itega predmeta ter v_i volumen itega predmeta.
+
+W=30\
+A=[(10,6),(15,3),(20,11)]\
+Pogljemo kolikokrat lahko element (10,6) vstavimo v naš nahrbnik. Opazimo da 3krat, saj 4krat bi že presegli volumen nahrbnika.\
+Pogljemo kolikokrat lahko element (15,3) vstavimo v naš nahrbnik. Opazimo da 2krat.\
+Pogljemo kolikokrat lahko element (20,11) vstavimo v naš nahrbnik. Opazimo da 1krat.\
+Naš novi seznam A je torej [(10,6),(10,6),(10,6),(15,3),(15,3),(20,11)]\
+Z malo opazovanje in poiskušanja pridemo do teh rešitev {[(10,6),(10,6),(10,6)],[(10,6),(15,3)],[(15,3),(15,3)],[(10,6),(20,11)]}\
+Ko pogledamo cene opazimo, de najbolj spača izbrati [(10,6),(10,6),(10,6)].
+
+V splošnem primeru se torej držimo te formule:\
+V= velikost nahrbtnika \
+($c_i$,$v_i$) kjer je $c_i$ cena i-tega predmeta in  $v_i$ volumen i-tega predmeta.\
+Naj bo število ponovitev $= celidel(V/v_i)$\
+Sedaj za i-ti element naredimo "število ponovitev" kopij.
+
+Na naših novih podatkih sedaj izvedemo že znan algoritem nahrbtnik(predmeti, W), ki na vrne optimalno vrednost 0/1 nahrbtnika za podane predmete (torej osnovna verzija problema).
 
 ##### Slabosti
-Ta pristo je slab, saj se nam lahko zgodi, da se nam elemeti velikokrat podvojijo na primer vsak element dobi 1000 kopij to bi bilo zelo slabo zaradi časa, ki bi ga potrebovali da rešimo problem. Časovna analiza nam vrne O(n*W) in v primeru, da se vsak n ponovi velikokrat lahko opazimo, da problem eksplodira.
+Ta pristo je slab, saj se nam lahko zgodi, da se nam elemeti velikokrat podvojijo na primer vsak element dobi 1000 kopij to bi bilo zelo slabo zaradi časa, ki bi ga potrebovali da rešimo problem. Časovna analiza nam vrne $O(n*W)$ in v primeru, da se vsak n ponovi velikokrat lahko opazimo, da problem eksplodira.
 
 #### Drugi način
 V drugem načinu ustavrimo novo Bellmanovo enačbo.
 
-```
-G(W)=max{G(W-v_i)+c_i}; kjer max teče od i=1 do n.
-```
-V tej formuli na vsakem koraku preverimo kateri od n elementov se nam najbolj splača dodati (pregledamo vse elemente vsakič).
-Ko ugotovimo kateri je ta element našemu volumno odštejemo volumen tega elementa in vrednst elementa prištejemo prištejemo. Na koncu vrnemo optimalno vrednost nahrbtnika. 
+$$
+G(W)=max_{i=1}^{n} (G(W-v_i)+c_i)
+$$
+
+$G(W)$ predstavlaj največjo ceno, ki jo lahko nahrbtnik z volumnom W ima.
+V formuli na vsakem koraku preverimo kateri od n elementov se nam najbolj splača dodati (pregledamo vse elemente vsakič).
+Ko ugotovimo kateri je ta element našemu volumno odštejemo volumen tega elementa in vrednst elementa prištejemo. Na koncu vrnemo optimalno vrednost nahrbtnika. 
 
 ##### Časovna analiza
-V tej formuli dobimo, da je časovna analiza O(n*W), kjer n predstavlja število elementov.
+V tej formuli dobimo, da je časovna analiza $O(n*W)$, kjer n predstavlja število elementov.
 
 ### Podobni problem
 Razporejanje opravil: Imamo seznam opravil s časovnimi in vrednostnimi vrednostmi. Cilj je izbrati največje število opravil, ki jih lahko izvedemo v določenem časovnem okviru, tako da je skupna vrednost maksimalna.
